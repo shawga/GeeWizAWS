@@ -80,6 +80,13 @@ jobs:
         # echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
         ./deploy-prod.sh  
 
+    - name: Debug GitHub identity
+      run: |
+        echo "Ref: ${{ github.ref }}"
+        echo "Environment: ${{ github.environment }}"
+        echo "Repo: ${{ github.repository }}"
+        echo "Actor: ${{ github.actor }}" 
+
     #- name: Fill in the new image ID in the Amazon ECS task definition
     #  id: task-def
     #  uses: aws-actions/amazon-ecs-render-task-definition@v1
@@ -95,4 +102,5 @@ jobs:
     #    service: ${{ env.ECS_SERVICE }}
     #    cluster: ${{ env.ECS_CLUSTER }}
     #    wait-for-service-stability: true
-  
+
+
