@@ -1,34 +1,13 @@
 name: Manual OIDC Test
 
 on:
-  workflow_dispatch:
+  push:
+    branches: [ "main" ]
 
-jobs:
-  test-oidc:
-    runs-on: ubuntu-latest
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
 
-    steps:
-    - name: Step 1 - Request OIDC token from GitHub
-      id: get_token
-      run: |
-        echo "Requesting OIDC token..."
-        TOKEN_JSON=$(curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-          "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=sts.amazonaws.com")
-        echo "$TOKEN_JSON"
-        echo "::set-output name=token::$(echo $TOKEN_JSON | jq -r .value)"
-      env:
-        ACTIONS_ID_TOKEN_REQUEST_TOKEN: ${{ secrets.ACTIONS_ID_TOKEN_REQUEST_TOKEN }}
-        ACTIONS_ID_TOKEN_REQUEST_URL: ${{ secrets.ACTIONS_ID_TOKEN_REQUEST_URL }}
-
-    - name: Step 2 - Use token to call AssumeRoleWithWebIdentity
-      run: |
-        ROLE_ARN="arn:aws:iam::209479297458:role/GitHubActionsRole-production"
-        IDENTITY_TOKEN="${{ steps.get_token.outputs.token }}"
-
-        echo "Calling STS AssumeRoleWithWebIdentity..."
-        aws sts assume-role-with-web-identity \
-          --role-arn "$ROLE_ARN" \
-          --role-session-name GitHubOIDCTest \
-          --web-identity-token "$IDENTITY_TOKEN" \
-          --duration-seconds 900 \
-          --region eu-west-1
+permissions:
+  id-token: write
+  contents: read
