@@ -60,14 +60,14 @@ jobs:
         echo "Environment: ${{ github.environment }}"
         echo "Repo: ${{ github.repository }}"
         echo "Actor: ${{ github.actor }}" 
-        echo "role-to-assume: ${{ env.AWS_ROLE_TO_ASSUME }}" 
-        echo "aws-region: ${{ env.AWS_REGION }}" 
+        echo "role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}" 
+        echo "aws-region: ${{ secrets.AWS_REGION }}" 
 
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v2
       with:
-        role-to-assume: ${{ env.AWS_ROLE_TO_ASSUME }} 
-        aws-region: ${{ env.AWS_REGION }}
+        role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }} 
+        aws-region: ${{ secrets.AWS_REGION }}
         #  aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         #  aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
