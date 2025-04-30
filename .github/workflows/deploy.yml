@@ -60,6 +60,8 @@ jobs:
         echo "Environment: ${{ github.environment }}"
         echo "Repo: ${{ github.repository }}"
         echo "Actor: ${{ github.actor }}" 
+        echo "role-to-assume: ${{ env.AWS_ROLE_TO_ASSUME }}" 
+        echo "aws-region: ${{ env.AWS_REGION }}" 
 
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v2
