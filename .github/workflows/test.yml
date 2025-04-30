@@ -1,8 +1,7 @@
-name: Manual OIDC Test
+name: Test AWS OIDC Role Assumption
 
 on:
-  push:
-    branches: [ "main" ]
+  workflow_dispatch:
 
 env:
   AWS_REGION: ${{ secrets.AWS_REGION }}
@@ -11,3 +10,21 @@ env:
 permissions:
   id-token: write
   contents: read
+
+jobs:
+  test-oidc:
+    name: Test OIDC Role Assumption
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials using OIDC
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Verify Identity
+        run: aws sts get-caller-identity
