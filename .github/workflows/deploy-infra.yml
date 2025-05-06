@@ -18,10 +18,10 @@ jobs:
     strategy:
       matrix:
         account:
-          - id: "111111111111"  # Dev Account ID
-            name: "dev"
-          - id: "222222222222"  # Prod Account ID
-            name: "prod"
+          - id: "810931303993"  # Dev Account ID
+            name: "GeeWizAWS_Dev-Staging"
+          - id: "568869123779"  # Prod Account ID
+            name: "GeeWiz_Prod"
 
     steps:
       - name: Checkout code
@@ -30,7 +30,7 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          role-to-assume: arn:aws:iam::${{ matrix.account.id }}:role/GitHubActionsRole
+          role-to-assume: arn:aws:iam::${{ matrix.account.id }}:role/GitHubActionsRole-production
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Deploy VPC to ${{ matrix.account.name }}
