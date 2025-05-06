@@ -1,0 +1,107 @@
+name: Deploy Multi-Account Landing Zone Infrastructure
+
+on:
+  push:
+    branches: [ main ]
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: eu-west-1
+
+jobs:
+  deploy-vpc:
+    name: Deploy VPCs to Dev and Prod
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        account:
+          - id: "111111111111"  # Dev Account ID
+            name: "dev"
+          - id: "222222222222"  # Prod Account ID
+            name: "prod"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::${{ matrix.account.id }}:role/GitHubActionsRole
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Deploy VPC to ${{ matrix.account.name }}
+        run: |
+          aws cloudformation deploy \
+            --template-file infra/vpc-${{ matrix.account.name }}.yaml \
+            --stack-name vpc-${{ matrix.account.name }} \
+            --capabilities CAPABILITY_NAMED_IAM
+
+  deploy-scp:
+    name: Deploy SCP to OUs
+    runs-on: ubuntu-latest
+    needs: deploy-vpc
+    environment: production
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials for management account
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::333333333333:role/GitHubActionsRole  # Mgmt Account
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Deploy baseline SCP
+        run: |
+          aws cloudformation deploy \
+            --template-file infra/scp-baseline.yaml \
+            --stack-name baseline-scp \
+            --capabilities CAPABILITY_NAMED_IAM
+
+  deploy-baseline-security:
+    name: Deploy IAM Roles, Security Baselines and S3 Logging
+    runs-on: ubuntu-latest
+    needs: deploy-scp
+    strategy:
+      matrix:
+        account:
+          - id: "111111111111"  # Dev Account ID
+            name: "dev"
+          - id: "222222222222"  # Prod Account ID
+            name: "prod"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::${{ matrix.account.id }}:role/GitHubActionsRole
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Deploy IAM Roles
+        run: |
+          aws cloudformation deploy \
+            --template-file infra/iam-roles-${{ matrix.account.name }}.yaml \
+            --stack-name iam-roles-${{ matrix.account.name }} \
+            --capabilities CAPABILITY_NAMED_IAM
+
+      - name: Deploy Security Baselines
+        run: |
+          aws cloudformation deploy \
+            --template-file infra/security-baseline-${{ matrix.account.name }}.yaml \
+            --stack-name security-baseline-${{ matrix.account.name }} \
+            --capabilities CAPABILITY_NAMED_IAM
+
+      - name: Deploy S3 Logging Bucket
+        run: |
+          aws cloudformation deploy \
+            --template-file infra/s3-logging-${{ matrix.account.name }}.yaml \
+            --stack-name s3-logging-${{ matrix.account.name }} \
+            --capabilities CAPABILITY_NAMED_IAM

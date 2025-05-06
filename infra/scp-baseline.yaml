@@ -1,0 +1,22 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Apply baseline SCP to OUs
+
+Resources:
+  DenyUnapprovedRegions:
+    Type: AWS::Organizations::Policy
+    Properties:
+      Name: DenyUnapprovedRegions
+      Description: Denies actions outside approved AWS regions
+      Type: SERVICE_CONTROL_POLICY
+      Content:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Deny
+            Action: "*"
+            Resource: "*"
+            Condition:
+              StringNotEquals:
+                aws:RequestedRegion:
+                  - eu-west-1
+      TargetIds:
+        - ou-xxxx-yyyyyyy # Replace with your actual OU ID
