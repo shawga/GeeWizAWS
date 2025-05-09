@@ -5,8 +5,11 @@ on:
 
 env:
   AWS_REGION: eu-west-1
-  AWS_ROLE_TO_ASSUME: arn:aws:iam::209479297458:role/GitHubActionsRole-production
-  # arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/GitHubActionsRole
+  AWS_ROLE_TO_ASSUME: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/GitHubActionsRole-production
+  #arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/GitHubActionsRole-production
+  #arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/GitHubActionsRole-dev-staging
+  #arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/GitHubActionsRole-network
+  #arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/GitHubActionsRole
 
 permissions:
   id-token: write
@@ -16,6 +19,7 @@ jobs:
   test-oidc:
     name: Test OIDC Role Assumption
     runs-on: ubuntu-latest
+    environment: production #production, development
 
     steps:
       - name: Checkout
