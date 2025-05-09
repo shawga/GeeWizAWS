@@ -1,0 +1,51 @@
+name: Terraform Multi-Env Deploy
+
+#on:
+#  push:
+#    branches: [ main ]
+on:
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  global:
+    name: Bootstrap Organization (Global)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+
+      - name: Init & Apply Global
+        working-directory: terraform/global
+        run: |
+          terraform init
+          terraform apply -auto-approve
+
+  deploy-env:
+    name: Deploy Environments (Dev & Prod)
+    needs: global
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        env:
+          - development
+          - production
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+
+      - name: Init & Apply ${{ matrix.env }}
+        working-directory: terraform/envs/${{ matrix.env }}
+        run: |
+          terraform init
+          terraform plan -var-file=${{ matrix.env }}/variables.tfvars -out plan.tfplan
+          terraform apply -auto-approve plan.tfplan
