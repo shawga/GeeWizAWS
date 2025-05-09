@@ -5,7 +5,8 @@ on:
 
 env:
   AWS_REGION: eu-west-1
-  AWS_ROLE_TO_ASSUME: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/GitHubActionsRole
+  AWS_ROLE_TO_ASSUME: arn:aws:iam::209479297458:role/GitHubActionsRole-production
+  # arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/GitHubActionsRole
 
 permissions:
   id-token: write
